@@ -53,3 +53,64 @@ function love.load()
 	backgroundR = math.random(255)
 	backgroundG = math.random(255)
 	backgroundB = math.random(255)
+
+	for y = 1, mapHeight do
+		table.insert(tiles, {})
+
+		for x = 1, mapWidth do
+			-- sky and bricks; this ID directly maps to whatever quad we want to render
+			table.insert(tiles[y], {
+				id = y < 7 and SKY or GROUND
+			})
+		end
+	end
+
+	love.graphics.setDefaultFilter('nearest', 'nearest')
+	love.window.setTitle('tiles0')
+
+	push:setupScreen(VIRTUAL_WIDTH, VIRTUAL_HEIGHT, WINDOW_WIDTH, WINDOW_HEIGHT, {
+		fullscreen = false,
+		resizeable = true,
+		vsync = true
+	})
+end
+
+function love.resize(w, h)
+	push:resize(w, h)
+end
+
+function love.keypressed(key)
+	if key == 'escape' then
+		love.event.quit()
+	end
+end
+
+function love.update(dt)
+	-- update camera scroll based on user input
+	if love.keyboard.isDown('left') then
+		cameraScroll = cameraScroll - CAMERA_SCROLL_SPEED * dt
+	elseif love.keyboard.isDown('right') then
+		cameraScroll = cameraScroll + CAMERA_SCROLL_SPEED * dt
+	end
+end
+
+function love.draw()
+	push:start()
+		-- translate scene by camera scroll amount; negative shifts have the effect of making it seem
+		-- like we're actually moving right and vice-versa; note the use of math.floor, as rendering
+		-- fractional camera offsets w/ a virtual resolution will result in weird pixelation and artifacting
+		-- as things are attempted to be drawn fractionally and then forced onto a small virtual canvas
+		love.graphics.translate(-math.floor(cameraScroll), 0)
+		love.graphics.clear(backgroundR, backgroundG, backgroundB, 255)
+
+		for y = 1, mapHeight do
+			for x = 1, mapWidth do
+				local tile = tiles[y][x]
+				love.graphics.draw(tilesheet, quads[tile.id], (x - 1) * TILE_SIZE, (y - 1) * TILE_SIZE)
+			end
+		end
+
+		-- draw character
+		love.graphics.draw(characterSheet, characterQuads[1], characterX, characterY)
+	push:finish()
+end
