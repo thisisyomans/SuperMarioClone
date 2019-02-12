@@ -33,4 +33,23 @@ function love.load()
 	tiles = {}
 
 	-- tilesheet image and quads for it, which will map to our IDs
+	tilesheet = love.graphics.newImage('tiles.png')
+	quads = GenerateQuads(tilesheet, TILE_SIZE, TILE_SIZE)
 	
+	-- texture for the character
+	characterSheet = love.graphics.newImage('character.png')
+	characterQuads = GenerateQuads(characterSheet, CHARACTER_WIDTH, CHARACTER_HEIGHT)
+	
+	-- place character in middle of screen, above top ground tile
+	characterX = VIRTUAL_WIDTH / 2 - (CHARACTER_WIDTH / 2)
+	characterY = ((7 -  1) * TILE_SIZE) - CHARACTER_HEIGHT
+
+	mapWidth = 20
+	mapHeight = 20
+	
+	-- amount by which we'll translate the scene to emulate a camera
+	cameraScroll = 0
+	
+	backgroundR = math.random(255)
+	backgroundG = math.random(255)
+	backgroundB = math.random(255)
