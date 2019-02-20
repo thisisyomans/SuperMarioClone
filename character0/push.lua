@@ -173,3 +173,57 @@ function push:finish(shader)
 		love.graphics.setScissor()
 	end
 end
+
+function push:setBorderColor(color, g, b)
+	self._borderColor = g and {color, g, b} or color
+end
+
+function push:toGame(x, y)
+	x, y = x - self._OFFSET.x, y - self._OFFSET.y
+	local normalX, normalY = x / self._GWIDTH, y / self._GHEIGHT
+
+	x = (x >= 0 and x <= self._WWIDTH * self._SCALE.x) and normalX * self._WWIDTH or nil
+	y = (y >= 0 and y <= self._WHEIGHT * self._SCALE.y) and normalY * self._WHEIGHT or nil
+
+	return x, y
+end
+
+--doesn't work - TODO
+function push:toReal(x, y)
+	return x + self._OFFSET.x, y + self._OFFSET.y
+end
+
+function push:switchFullScreen(winw, winh)
+	self._fullscreen = not self._fullscreen
+	local windowWidth, windowHeight = love.window.getDesktopDimensions()
+
+	if self._fullscreen then --save windowed dimensions for later
+		self._WINWIDTH, self._WINHEIGHT = self._RWIDTH, self._RHEIGHT
+	elseif not self._WINWIDTH or not self._WINHEIGHT then
+		self._WINWIDTH, self._WINHEIGHT = windowWidth * .5, windowHeight * .5
+	end
+
+	self._RWIDTH = self._fullscreen and windowWidth or winw or self._WINWIDTH
+	self._RHEIGHT = self._fullscreen and windowHeight or winh or self._WINHEIGHT
+
+	self:initValues()
+
+	love.window.setFullscreen(self._fullscreen, "desktop")
+	if not self._fullscreen and (winw or winh) then
+		love.window.setMode(self._RWIDTH, self._RHEIGHT) --set window dimensions
+	end
+end
+
+function push:resize(w, h)
+	local pixelScale = love.window.getPixelScale()
+	if self._highdpi then w, h = w / pixelScale, h / pixelScale() end
+	self._RWIDTH = w
+	self._RHEIGHT = h
+	self:initValues()
+end
+
+function push:getWidth() return self._WWIDTH end
+function push:getHeight() return self._WHEIGHT end
+function push:getDimensions() return self._WWIDTH, self._WHEIGHT end
+
+return push
